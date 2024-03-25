@@ -155,20 +155,20 @@ class ModelMetaclass(type):
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)
         attrs['__delete__'] = 'delete from `%s` where `%s`=?' % (tableName, primaryKey)
         return type.__new__(cls, name, bases, attrs)
-
+# 通过ModelMetaclass来创建
 class Model(dict, metaclass=ModelMetaclass):
     def __init__(self, **kw):
         super(Model, self).__init__(**kw)
-
+    # 返回属性为item的value值
     def __getattr__(self, item):
         try:
             return self[item]
         except KeyError:
             raise AttributeError(r"'Model' object hsa no attribute  '%s'" % item)
-
+    # 设置属性为key的值
     def __setattr__(self, key, value):
         self[key] = value
-
+    # 获取属性key的值
     def getValue(self, key):
         return getattr(self, key, None)
 
@@ -181,7 +181,7 @@ class Model(dict, metaclass=ModelMetaclass):
                 logging.debug('using default value for %s: %s' % (key, str(value)))
                 setattr(self, key, value)
         return value
-
+    # 使用classmethod，可以让所有子类调用class方法
     @classmethod
     async def findAll(cls, where=None, args=None, **kw):
         ' find objects by where clause. '
