@@ -1,6 +1,7 @@
 __author__ = 'Tony Mo'
 
-import aiohttp, aiomysql, logging
+import aiohttp, aiomysql
+import logging; logging.basicConfig(level=logging.INFO)
 # sql表示SQL语句
 # 封装一个log函数包装写入日志的格式
 def log(sql, arg=()):
