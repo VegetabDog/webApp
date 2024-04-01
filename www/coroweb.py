@@ -74,7 +74,7 @@ def has_request_arg(fn):
             raise ValueError('request parameter must be the last named parameter in function: %s%s' % (fn.__name__, str(sig)))
     return found
 
-class RequestHandle(object):
+class RequestHandler(object):
     def __init__(self, app, fn):
         self._app = app
         self._func = fn
@@ -139,5 +139,36 @@ def add_static(app):
     app.router.add_static('/static/', path)
     logging.info('add static %s => %s' % ('/static/', path))
 
+def add_route(app, fn):
+    method = getattr(fn, '__method__', None)
+    path = getattr(fn, '__route__', None)
+    if path is None or method is None:
+        raise ValueError('@get or @post not defined in %s.' % str(fn))
+    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
+        fn = asyncio.coroutine(fn)
+    logging.info('add route %s %s => %s(%s)' % (method, path, fn.__name__, ', '.join(inspect.signature(fn).parameters.keys())))
+    app.router.add_route(method, path, RequestHandler(app, fn))
 
+def add_routes(app, module_name):
+    # For package.module, n = 7
+    # For module, n = -1
+    n = module_name.rfind('.')
+    if n == -1:
+        # Import module
+        mod = __import__(module_name, globals(), locals())
+    else:
+        # For package.module, name = module
+        name = module_name[n + 1:]
+        # Import package.module, the same as 'from package import module', fromlist = [module]
+        mod = getattr(__import__(module_name[:n], globals(), locals(), [name]), name)
+    # Directory of attributes of module
+    for attr in dir(mod):
+        if attr.startswith('__'):
+            continue
+        fn = getattr(mod, attr)
+        if callable(fn):
+            method = getattr(fn, '__method__', None)
+            path = getattr(fn, '__route__', None)
+            if method and path:
+                add_route(app, fn)
 
