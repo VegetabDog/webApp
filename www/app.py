@@ -55,9 +55,10 @@ async def response_factory(app, handler):
     async def response(request):
         logging.info('Response handler...')
         r = await handler(request)
-        print(r)
+        # print(r)
         # 根据不同类型，处理返回数据
         if isinstance(r, web.StreamResponse):
+            # print('me %s ' % type(r))
             return r
         if isinstance(r, bytes):
             resp = web.Response(body=r)
