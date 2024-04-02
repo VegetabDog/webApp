@@ -56,6 +56,7 @@ async def response_factory(app, handler):
         logging.info('Response handler...')
         r = await handler(request)
         print(r)
+        # 根据不同类型，处理返回数据
         if isinstance(r, web.StreamResponse):
             return r
         if isinstance(r, bytes):
@@ -119,23 +120,3 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()
 
-# async def init_db(app):
-#     # If on Linux, use another user instead of 'root'
-#     await ORM.create_pool(
-#         host=configs.db.host,
-#         port=configs.db.port,
-#         user=configs.db.user,
-#         password=configs.db.password,
-#         db=configs.db.database
-#     )
-#
-#
-# app = web.Application(middlewares=[
-#     logger_factory,
-#     response_factory
-# ])
-# init_jinja2(app, filters=dict(datatime=datetime_filter))
-# add_routes(app, 'handlers')
-# add_static(app)
-# app.on_startup.append(init_db)
-# web.run_app(app, host='localhost', port=9000)
