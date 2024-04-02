@@ -9,6 +9,11 @@ from models import User, Comment, Blog, next_id
 @get('/')
 async def index(request):
     users = await User.findAll()
+    # result = {
+    #     '__template__': 'test.html',
+    #     'users': users
+    # }
+    # return json.dumps(result)
     return {
         '__template__': 'test.html',
         'users': users

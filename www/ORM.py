@@ -30,22 +30,22 @@ async def select(sql, agrs, size=None):
     log(sql, agrs)
     global __pool
     # await表示调用一个子协程，也就是一个协程调用另一个协程，并直接获得子协程的返回结果
-    with (await __pool) as conn:
-        cur = await conn.cursor(aiomysql.DictCursor)
-    # async with __pool.get() as conn:
-    #     async with conn.cursor(aiomysql.DictCursor) as cur:
+    # with (await __pool) as conn:
+    #     cur = await conn.cursor(aiomysql.DictCursor)
+    async with __pool.acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
     #     SQL语句的占位符是‘？’，MySql的占位符为‘%s’
     #     SQL语句要使用带参数的，避免使用自己拼接的字符串，这样可以防止SQL注入攻击
-        await cur.execute(sql.replace('?', '%s'), agrs or ())
-        if size:
-            # fetchmany()返回size大小的数据记录
-            rs = await cur.fetchmany(size)
-        else:
-            # fetchall()返回所有数据记录
-            rs = await cur.fetchall()
-        await cur.close()
-        logging.info('row returned: %s' % len(rs))
-        return rs
+            await cur.execute(sql.replace('?', '%s'), agrs or ())
+            if size:
+                # fetchmany()返回size大小的数据记录
+                rs = await cur.fetchmany(size)
+            else:
+                # fetchall()返回所有数据记录
+                rs = await cur.fetchall()
+            await cur.close()
+            logging.info('row returned: %s' % len(rs))
+            return rs
 # 该函数用于执行INSERT、UPDATE、DELETE语句，原因是三种操作所需参数一致；
 # 返回受影响数据的行数
 async def execute(sql, agrs):
